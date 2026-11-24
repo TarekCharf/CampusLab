@@ -6,8 +6,8 @@ import java.util.List;
 
 public interface ISuiviReservationService {
 
-    public SuiviReservation findReservationById(String idReservation);
-    public SuiviReservation addSuiviReservation(SuiviReservation suiviReservation);
-    public String deleteAllSuiviReservations();
-    public List<SuiviReservation> findAllSuiviReservations();
+    SuiviReservation findReservationById(String idReservation);
+    int addSuiviReservation(SuiviReservation suiviReservation);
+    String deleteAllSuiviReservations();
+    List<SuiviReservation> findAllSuiviReservations();
 }

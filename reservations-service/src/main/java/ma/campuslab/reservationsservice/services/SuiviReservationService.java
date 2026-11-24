@@ -19,8 +19,14 @@ public class SuiviReservationService implements ISuiviReservationService {
         return suivireservationRepository.findById(idReservation).orElseThrow();
     }
 
-    public SuiviReservation addSuiviReservation(SuiviReservation suiviReservation) {
-        return suivireservationRepository.save(suiviReservation);
+    public int addSuiviReservation(SuiviReservation suiviReservation) {
+        return suivireservationRepository.upsertSiPlusRecent(
+                suiviReservation.getIdReservation(),
+                suiviReservation.getIdUsager(),
+                suiviReservation.getIdMateriel(),
+                suiviReservation.getQuantite(),
+                suiviReservation.getStatut().name(),
+                suiviReservation.getVersionEtat());
     }
 
     public String deleteAllSuiviReservations() {

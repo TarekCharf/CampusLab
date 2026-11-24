@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import ma.campuslab.reservationsservice.config.RabbitConfig;
 import ma.campuslab.reservationsservice.entities.Reservation;
 import ma.campuslab.reservationsservice.entities.ReservationStatut;
+import ma.campuslab.reservationsservice.entities.SuiviReservation;
 import ma.campuslab.reservationsservice.grpc.UsagerGrpcClient;
 import ma.campuslab.reservationsservice.messaging.MessageEnvelope;
 import ma.campuslab.reservationsservice.messaging.MessagePublisher;
@@ -21,11 +22,13 @@ public class ReservationService implements IReservationService {
     private final IReservationRepository reservationRepository;
     private final MessagePublisher messagePublisher;
     private final UsagerGrpcClient usagerGrpcClient;
+    private final ISuiviReservationService suiviReservationService;
 
-    public ReservationService(IReservationRepository reservationRepository, MessagePublisher messagePublisher, UsagerGrpcClient usagerGrpcClient) {
+    public ReservationService(IReservationRepository reservationRepository, MessagePublisher messagePublisher, UsagerGrpcClient usagerGrpcClient, ISuiviReservationService suiviReservationService) {
         this.reservationRepository = reservationRepository;
         this.messagePublisher = messagePublisher;
         this.usagerGrpcClient = usagerGrpcClient;
+        this.suiviReservationService = suiviReservationService;
     }
 
     public Reservation findReservationById(String idReservation) {
@@ -73,7 +76,8 @@ public class ReservationService implements IReservationService {
                         RabbitConfig.T_RESERVER_MATERIEL, saved.getIdReservation(),
                         Map.of(
                                 "idMateriel", saved.getIdMateriel(),
-                                "quantite", saved.getQuantite()
+                                "quantite", saved.getQuantite(),
+                                "versionEtat", saved.getVersionEtat()
                         )
                 )
         );
@@ -98,7 +102,8 @@ public class ReservationService implements IReservationService {
                             RabbitConfig.T_LIBERER_RESERVATION, saved.getIdReservation(),
                             Map.of(
                                     "idMateriel", saved.getIdMateriel(),
-                                    "quantite", saved.getQuantite()
+                                    "quantite", saved.getQuantite(),
+                                    "versionEtat", saved.getVersionEtat()
                             )
                     )
             );
@@ -112,15 +117,18 @@ public class ReservationService implements IReservationService {
     @Transactional
     public Reservation appliquerResultat(MessageEnvelope message) {
         Reservation reservation = reservationRepository.findById(message.idReservation()).orElseThrow();
-
-        boolean modifie = false;
+        SuiviReservation suivi = suiviReservationService.findReservationById(reservation.getIdReservation());
+        if (message.donnees().get("versionEtat") != null && suivi.getVersionEtat() != ((Number) message.donnees().get("versionEtat")).intValue()) {
+            log.info("Résultat ignoré (versionEtat non correspondante) idMessage={} idReservation={} versionEtatAttendue={} versionEtatReçue={}",
+                    message.idMessage(), reservation.getIdReservation(), suivi.getVersionEtat(), message.donnees().get("versionEtat"));
+            return reservation;
+        }
 
         switch (message.type()) {
             case RabbitConfig.T_MATERIEL_RESERVE -> {
                 if (reservation.getStatut() == ReservationStatut.EN_ATTENTE) {
                     reservation.setStatut(ReservationStatut.CONFIRMEE);
                     reservation.setVersionEtat(reservation.getVersionEtat() + 1); // 1 -> 2
-                    modifie = true;
                 }
             }
             case RabbitConfig.T_RESERVATION_REFUSEE -> {
@@ -128,22 +136,15 @@ public class ReservationService implements IReservationService {
                     reservation.setStatut(ReservationStatut.REFUSEE);
                     reservation.setVersionEtat(reservation.getVersionEtat() + 1); // 1 -> 2
                     reservation.setMotif((String) message.donnees().get("motif"));
-                    modifie = true;
                 }
             }
             case RabbitConfig.T_RESERVATION_LIBEREE -> {
                 if (reservation.getStatut() == ReservationStatut.ANNULATION_EN_COURS) {
                     reservation.setStatut(ReservationStatut.ANNULEE);
                     reservation.setVersionEtat(reservation.getVersionEtat() + 1); // 3 -> 4
-                    modifie = true;
                 }
             }
             default -> log.warn("Type de résultat ignoré : {}", message.type());
-        }
-        if (!modifie) {
-            log.info("Résultat ignoré (déjà traité ou transition non applicable) idMessage={} idReservation={} statut={}",
-                    message.idMessage(), reservation.getIdReservation(), reservation.getStatut());
-            return reservation;
         }
 
         Reservation saved = reservationRepository.save(reservation);
@@ -152,7 +153,7 @@ public class ReservationService implements IReservationService {
     }
 
     private void publierEtat(Reservation r) {
-        messagePublisher.publierApresCommit(RabbitConfig.EX_EVENEMENTS, "",
+        messagePublisher.publierApresCommit(RabbitConfig.EX_SUIVI, RabbitConfig.RK_SUIVI,
                 MessageEnvelope.of(RabbitConfig.T_ETAT_MODIFIE, r.getIdReservation(),
                         Map.of("idUsager", r.getIdUsager(),
                                 "idMateriel", r.getIdMateriel(),

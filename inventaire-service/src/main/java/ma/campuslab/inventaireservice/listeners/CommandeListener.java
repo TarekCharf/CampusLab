@@ -31,6 +31,7 @@ public class CommandeListener {
                            @Header(AmqpHeaders.DELIVERY_TAG) long tag) throws IOException {
         log.info("RECU type={} idMessage={} idReservation={}", msg.type(), msg.idMessage(), msg.idReservation());
         try {
+            // checker suivi reservation
             // 1) Transaction métier : décision + modification du disponible, COMMIT à la sortie de la méthode.
             //    Un message déjà traité ne change pas le disponible : le résultat enregistré est renvoyé.
             Optional<MessageEnvelope> resultat = switch (msg.type()) {

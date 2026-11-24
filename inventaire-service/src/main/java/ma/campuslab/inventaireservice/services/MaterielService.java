@@ -37,6 +37,10 @@ public class MaterielService implements IMaterielService{
         return materielRepository.findAll();
     }
 
+    public String suiviReservationCheck(MessageEnvelope message) {
+        return String.valueOf(message.donnees().get("versionEtat"));
+    }
+
     @Transactional
     public Optional<MessageEnvelope> traiterReservation(MessageEnvelope message) {
         message.donnees().get("idMateriel");

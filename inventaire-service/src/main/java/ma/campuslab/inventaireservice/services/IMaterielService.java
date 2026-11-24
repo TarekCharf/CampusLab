@@ -7,9 +7,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IMaterielService {
-    public Optional<Materiel> findMaterielById(String idMateriel);
-    public List<Materiel> findAllMateriel();
-    public Optional<MessageEnvelope> traiterReservation(MessageEnvelope message);
-    public Optional<MessageEnvelope> traiterLiberation(MessageEnvelope message);
-    public String resetAllMateriel();
+    Optional<Materiel> findMaterielById(String idMateriel);
+    List<Materiel> findAllMateriel();
+    String suiviReservationCheck(MessageEnvelope message);
+    Optional<MessageEnvelope> traiterReservation(MessageEnvelope message);
+    Optional<MessageEnvelope> traiterLiberation(MessageEnvelope message);
+    String resetAllMateriel();
 }

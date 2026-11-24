@@ -6,7 +6,7 @@ import ma.campuslab.inventaireservice.config.RabbitConfig;
 import ma.campuslab.inventaireservice.entities.Materiel;
 import ma.campuslab.inventaireservice.messaging.MessageEnvelope;
 import ma.campuslab.inventaireservice.messaging.MessagePublisher;
-import ma.campuslab.inventaireservice.services.MaterielService;
+import ma.campuslab.inventaireservice.services.IMaterielService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -20,9 +20,9 @@ import java.util.Map;
 @Slf4j
 public class InventaireListener {
     private final MessagePublisher messagePublisher;
-    private final MaterielService materielService;
+    private final IMaterielService materielService;
 
-    public InventaireListener(MessagePublisher messagePublisher, MaterielService materielService) {
+    public InventaireListener(MessagePublisher messagePublisher, IMaterielService materielService) {
         this.messagePublisher = messagePublisher;
         this.materielService = materielService;
     }
