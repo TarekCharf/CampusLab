@@ -1,0 +1,118 @@
+services:
+  mysql:
+    image: mysql:9.6
+    container_name: campuslab-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      TZ: Africa/Casablanca
+    ports:
+      - "3306:3306"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # scripts exécutés UNIQUEMENT au premier démarrage (volume vide)
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: campuslab-rabbitmq
+    # hostname fixe : RabbitMQ range ses données par nom de nœud.
+    # Sans lui, recréer le conteneur ferait perdre les files durables.
+    hostname: campuslab-rabbit
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: campuslab
+      RABBITMQ_DEFAULT_PASS: campuslab123
+    ports:
+      - "5672:5672"     # AMQP (les services Spring)
+      - "15672:15672"   # interface web + API de gestion
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  # --- Microservice 1 (REST + gRPC Client) ---
+  reservations-service:
+    build: ./reservations-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      usagers-service:
+        condition: service_started
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/reservations_db?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: reservations_user
+      SPRING_DATASOURCE_PASSWORD: reservations_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_USERNAME: campuslab
+      SPRING_RABBITMQ_PASSWORD: campuslab123
+      SPRING_RABBITMQ_LISTENER_SIMPLE_ACKNOWLEDGE_MODE: manual
+      SPRING_RABBITMQ_LISTENER_SIMPLE_PREFETCH: 10
+      SPRING_RABBITMQ_PUBLISHER_CONFIRM_TYPE: correlated
+      SPRING_RABBITMQ_PUBLISHER_RETURNS: true
+      SPRING_RABBITMQ_TEMPLATE_MANDATORY: true
+      # Point gRPC client to usagers-service container (Spring Boot 4.1+ / Spring gRPC property)
+      SPRING_GRPC_CLIENT_CHANNELS_USAGERS_ADDRESS: static://usagers-service:9091
+
+  # --- Microservice 2 (REST + RabbitMQ Consumer) ---
+  inventaire-service:
+    build: ./inventaire-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8082
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/inventaire_db?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: inventaire_user
+      SPRING_DATASOURCE_PASSWORD: inventaire_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_USERNAME: campuslab
+      SPRING_RABBITMQ_PASSWORD: campuslab123
+      SPRING_RABBITMQ_LISTENER_SIMPLE_ACKNOWLEDGE_MODE: manual
+      SPRING_RABBITMQ_LISTENER_SIMPLE_PREFETCH: 10
+      SPRING_RABBITMQ_PUBLISHER_CONFIRM_TYPE: correlated
+      SPRING_RABBITMQ_PUBLISHER_RETURNS: true
+      SPRING_RABBITMQ_TEMPLATE_MANDATORY: true
+
+  # --- Microservice 3 (gRPC Server) ---
+  usagers-service:
+    build: ./usagers-service
+    ports:
+      - "8083:8083" # HTTP / Actuator
+      - "9091:9091" # gRPC port exposed to host for testing (e.g., Postman / grpcurl)
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8083
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/usagers_db?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: usagers_user
+      SPRING_DATASOURCE_PASSWORD: usagers_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_GRPC_SERVER_PORT: 9091
+
+volumes:
+  mysql_data:
+  rabbitmq_data:

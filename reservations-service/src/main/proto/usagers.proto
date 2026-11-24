@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package campuslab.usagers.v1;
+
+// Génère une classe par message (au lieu d'une seule classe géante)
+option java_multiple_files = true;
+// Package Java des classes générées : adapte-le à ton projet
+option java_package = "ma.campuslab.usagersservice.grpc";
+
+service UsagerService {
+  rpc VerifierAdmissibilite (VerifierAdmissibiliteRequest) returns (VerifierAdmissibiliteReponse);
+}
+
+message VerifierAdmissibiliteRequest {
+  string idUsager = 1;     // le numéro (1, 2...) identifie le champ, ne le change jamais
+}
+
+message VerifierAdmissibiliteReponse {
+  bool admissible = 1;
+  string motif = 2;        // OK, USAGER_SUSPENDU ou USAGER_INCONNU
+}
