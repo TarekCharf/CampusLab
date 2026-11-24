@@ -6,9 +6,9 @@ import ma.campuslab.reservationsservice.messaging.MessageEnvelope;
 
 public interface IReservationService {
 
-    public Reservation findReservationById(String idReservation);
-    public Reservation addReservation(Reservation reservation);
-    public Reservation annulerReservation(String idReservation);
-    public Reservation appliquerResultat(MessageEnvelope message);
-    public String deleteAllReservations();
+    Reservation findReservationById(String idReservation);
+    Reservation addReservation(Reservation reservation);
+    Reservation annulerReservation(String idReservation);
+    Reservation appliquerResultat(MessageEnvelope message);
+    String deleteAllReservations();
 }
