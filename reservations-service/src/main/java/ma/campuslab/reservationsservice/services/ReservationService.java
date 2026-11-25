@@ -5,9 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import ma.campuslab.reservationsservice.config.RabbitConfig;
 import ma.campuslab.reservationsservice.entities.Reservation;
 import ma.campuslab.reservationsservice.entities.ReservationStatut;
-import ma.campuslab.reservationsservice.entities.SuiviReservation;
-import ma.campuslab.reservationsservice.exceptions.UsagerNonAdmissibleException;
-import ma.campuslab.reservationsservice.exceptions.UsagerObligatoireException;
+import ma.campuslab.reservationsservice.exceptions.materiel.MaterielObligatoireException;
+import ma.campuslab.reservationsservice.exceptions.materiel.MaterielQuantiteException;
+import ma.campuslab.reservationsservice.exceptions.usager.UsagerNonAdmissibleException;
+import ma.campuslab.reservationsservice.exceptions.usager.UsagerObligatoireException;
 import ma.campuslab.reservationsservice.grpc.UsagerGrpcClient;
 import ma.campuslab.reservationsservice.messaging.MessageEnvelope;
 import ma.campuslab.reservationsservice.messaging.MessagePublisher;
@@ -25,13 +26,11 @@ public class ReservationService implements IReservationService {
     private final IReservationRepository reservationRepository;
     private final MessagePublisher messagePublisher;
     private final UsagerGrpcClient usagerGrpcClient;
-    private final SuiviReservationService suiviReservationService;
 
-    public ReservationService(IReservationRepository reservationRepository, MessagePublisher messagePublisher, UsagerGrpcClient usagerGrpcClient, SuiviReservationService suiviReservationService) {
+    public ReservationService(IReservationRepository reservationRepository, MessagePublisher messagePublisher, UsagerGrpcClient usagerGrpcClient) {
         this.reservationRepository = reservationRepository;
         this.messagePublisher = messagePublisher;
         this.usagerGrpcClient = usagerGrpcClient;
-        this.suiviReservationService = suiviReservationService;
     }
 
     public Reservation findReservationById(String idReservation) {
@@ -52,7 +51,7 @@ public class ReservationService implements IReservationService {
         }
 
         if (reservation.getIdUsager() == null || reservation.getIdUsager().isBlank()) {
-            throw new UsagerObligatoireException("L'identifiant de l'usager est obligatoire", new NullPointerException());
+            throw new UsagerObligatoireException("L'identifiant de l'usager est obligatoire");
         }
 
         UsagerGrpcClient.Admissibilite admissibilite = usagerGrpcClient.verifier(reservation.getIdUsager());
@@ -61,11 +60,11 @@ public class ReservationService implements IReservationService {
         }
 
         if (reservation.getQuantite() <= 0) {
-            throw new IllegalArgumentException("La quantité est obligatoire et doit être positive");
+            throw new MaterielQuantiteException("La quantité est obligatoire et doit être positive");
         }
 
         if (reservation.getIdMateriel() == null || reservation.getIdMateriel().isBlank()) {
-            throw new IllegalArgumentException("L'identifiant du matériel est obligatoire");
+            throw new MaterielObligatoireException("L'identifiant du matériel est obligatoire");
         }
 
         reservation.setStatut(ReservationStatut.EN_ATTENTE);

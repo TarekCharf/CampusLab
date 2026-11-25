@@ -1,4 +1,4 @@
-package ma.campuslab.reservationsservice.exceptions;
+package ma.campuslab.reservationsservice.exceptions.usager;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.Map;
 
 @RestControllerAdvice
-public class ApiExceptionHandler {
+public class UsagerExceptionHandler {
 
     @ExceptionHandler(UsagerNonAdmissibleException.class)
     public ResponseEntity<Map<String, Object>> handleNonAdmissible(UsagerNonAdmissibleException ex) {

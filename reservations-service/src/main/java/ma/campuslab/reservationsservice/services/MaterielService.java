@@ -28,15 +28,6 @@ public class MaterielService implements IMaterielService {
         this.pendingReset = pendingReset;
     }
 
-    public MessageEnvelope publishMessage(String idMateriel) {
-        MessageEnvelope messageEnvelope = MessageEnvelope.of(
-                RabbitConfig.T_TEST, "TEST-001",
-                Map.of("idMateriel", idMateriel)
-        );
-        messagePublisher.publier(RabbitConfig.EX_COMMANDES, RabbitConfig.RK_TEST, messageEnvelope);
-        return messageEnvelope;
-    }
-
     public List<MaterielDto> listMateriel() {
         String correlationId = "LISTE-MATERIEL-" + UUID.randomUUID();
         CompletableFuture<List<MaterielDto>> future = pendingRegistry.register(correlationId);

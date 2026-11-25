@@ -1,4 +1,4 @@
-package ma.campuslab.reservationsservice.exceptions;
+package ma.campuslab.reservationsservice.exceptions.usager;
 
 import lombok.Getter;
 

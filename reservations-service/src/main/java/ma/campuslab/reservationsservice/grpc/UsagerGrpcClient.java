@@ -1,7 +1,7 @@
 package ma.campuslab.reservationsservice.grpc;
 
 import io.grpc.StatusRuntimeException;
-import ma.campuslab.reservationsservice.exceptions.UsagerServiceIndisponibleException;
+import ma.campuslab.reservationsservice.exceptions.usager.UsagerServiceIndisponibleException;
 import ma.campuslab.usagersservice.grpc.UsagerServiceGrpc;
 import ma.campuslab.usagersservice.grpc.VerifierAdmissibiliteReponse;
 import ma.campuslab.usagersservice.grpc.VerifierAdmissibiliteRequest;
