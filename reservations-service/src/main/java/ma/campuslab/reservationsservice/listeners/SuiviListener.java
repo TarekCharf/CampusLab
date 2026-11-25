@@ -36,7 +36,7 @@ public class SuiviListener {
                     String.valueOf(msg.donnees().get("idUsager")),
                     String.valueOf(msg.donnees().get("idMateriel")),
                     ((Number) msg.donnees().get("quantite")).intValue(),
-                    ReservationStatut.valueOf(String.valueOf(msg.donnees().get("statut"))),
+                    String.valueOf(msg.donnees().get("statut")),
                     ((Number) msg.donnees().get("versionEtat")).intValue(),
                     String.valueOf(msg.donnees().get("motif"))
             );

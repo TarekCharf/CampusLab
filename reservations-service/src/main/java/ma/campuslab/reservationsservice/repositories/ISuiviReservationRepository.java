@@ -23,6 +23,6 @@ public interface ISuiviReservationRepository extends JpaRepository<SuiviReservat
                            @Param("usager") String usager,
                            @Param("materiel") String materiel,
                            @Param("quantite") int quantite,
-                           @Param("statut") ReservationStatut statut,
+                           @Param("statut") String statut,
                            @Param("version") int version);
     }

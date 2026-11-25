@@ -20,11 +20,7 @@ public class SuiviReservation {
     private String idMateriel;
 
     private int quantite;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
-    private ReservationStatut statut;
-
+    private String statut;
     private int versionEtat;
 
     @Nullable
@@ -35,7 +31,7 @@ public class SuiviReservation {
         this.idUsager = reservation.getIdUsager();
         this.idMateriel = reservation.getIdMateriel();
         this.quantite = reservation.getQuantite();
-        this.statut = reservation.getStatut();
+        this.statut = reservation.getStatut().name();
         this.versionEtat = reservation.getVersionEtat();
         this.Motif = reservation.getMotif();
     }
