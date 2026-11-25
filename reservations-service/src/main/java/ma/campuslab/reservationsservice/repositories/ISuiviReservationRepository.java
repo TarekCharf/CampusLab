@@ -16,8 +16,8 @@ public interface ISuiviReservationRepository extends JpaRepository<SuiviReservat
           (id_reservation, id_usager, id_materiel, quantite, statut, version_etat)
         VALUES (:id, :usager, :materiel, :quantite, :statut, :version) AS nouveau
         ON DUPLICATE KEY UPDATE
-          statut       = IF(nouveau.version_etat > version_etat, nouveau.statut, statut),
-          version_etat = GREATEST(version_etat, nouveau.version_etat)
+          statut       = IF(nouveau.version_etat > suivi_reservation.version_etat, nouveau.statut, suivi_reservation.statut),
+          version_etat = GREATEST(suivi_reservation.version_etat, nouveau.version_etat)
         """, nativeQuery = true)
     void upsertSiPlusRecent(@Param("id") String id,
                            @Param("usager") String usager,
