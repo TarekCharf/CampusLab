@@ -50,7 +50,6 @@ public class ReservationService implements IReservationService {
             throw new UsagerObligatoireException("L'identifiant de l'usager est obligatoire", new NullPointerException());
         }
 
-
         UsagerGrpcClient.Admissibilite admissibilite = usagerGrpcClient.verifier(reservation.getIdUsager());
         if (!admissibilite.admissible()) {
             throw new UsagerNonAdmissibleException(admissibilite.motif(), "L'identifiant de l'usager est " + admissibilite.motif());

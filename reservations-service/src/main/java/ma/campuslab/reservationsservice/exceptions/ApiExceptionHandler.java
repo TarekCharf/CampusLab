@@ -24,6 +24,18 @@ public class ApiExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(UsagerObligatoireException.class)
+    public ResponseEntity<Map<String, Object>> handleObligatoire(UsagerObligatoireException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST) // 400
+                .body(Map.of(
+                        "timestamp", Instant.now().toString(),
+                        "status", 400,
+                        "erreur", "USAGER_OBLIGATOIRE",
+                        "motif", ex.getMessage(),
+                        "message", ex.getMessage()
+                ));
+    }
+
     @ExceptionHandler(UsagerServiceIndisponibleException.class)
     public ResponseEntity<Map<String, Object>> handleIndisponible(UsagerServiceIndisponibleException ex) {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE) // 503

@@ -18,7 +18,7 @@ public class UsagerService implements IUsagerService {
     }
 
     public Usager findUsagerById(String idUsager) {
-        return usagerRepository.findById(idUsager).orElseThrow();
+        return usagerRepository.findById(idUsager).orElse(null);
     }
 
     public String resetAllUsagers() {
