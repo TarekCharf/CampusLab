@@ -13,8 +13,8 @@ public interface ISuiviReservationRepository extends JpaRepository<SuiviReservat
     @Transactional
     @Query(value = """
             INSERT INTO suivi_reservation
-          (id_reservation, id_usager, id_materiel, quantite, statut, version_etat)
-        VALUES (:id, :usager, :materiel, :quantite, :statut, :version) AS nouveau
+          (id_reservation, id_usager, id_materiel, quantite, statut, version_etat, motif)
+        VALUES (:id, :usager, :materiel, :quantite, :statut, :version, :motif) AS nouveau
         ON DUPLICATE KEY UPDATE
           statut       = IF(nouveau.version_etat > suivi_reservation.version_etat, nouveau.statut, suivi_reservation.statut),
           version_etat = GREATEST(suivi_reservation.version_etat, nouveau.version_etat)
@@ -24,5 +24,6 @@ public interface ISuiviReservationRepository extends JpaRepository<SuiviReservat
                            @Param("materiel") String materiel,
                            @Param("quantite") int quantite,
                            @Param("statut") String statut,
-                           @Param("version") int version);
+                           @Param("version") int version,
+                           @Param("motif") String motif);
     }
