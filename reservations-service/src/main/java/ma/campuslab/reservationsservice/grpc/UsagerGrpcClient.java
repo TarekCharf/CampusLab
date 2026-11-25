@@ -1,6 +1,7 @@
 package ma.campuslab.reservationsservice.grpc;
 
 import io.grpc.StatusRuntimeException;
+import ma.campuslab.reservationsservice.exceptions.usager.UsagerServiceIndisponibleException;
 import ma.campuslab.usagersservice.grpc.UsagerServiceGrpc;
 import ma.campuslab.usagersservice.grpc.VerifierAdmissibiliteReponse;
 import ma.campuslab.usagersservice.grpc.VerifierAdmissibiliteRequest;
@@ -31,12 +32,8 @@ public class UsagerGrpcClient {
 
         } catch (StatusRuntimeException e) {
             // UNAVAILABLE (service arrêté) ou DEADLINE_EXCEEDED (trop lent) => erreur technique => HTTP 503
-            throw new UsagersIndisponibleException(
+            throw new UsagerServiceIndisponibleException(
                     "Service Usagers indisponible (" + e.getStatus().getCode() + ")", e);
         }
-    }
-
-    public static class UsagersIndisponibleException extends RuntimeException {
-        public UsagersIndisponibleException(String message, Throwable cause) { super(message, cause); }
     }
 }

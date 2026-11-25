@@ -16,11 +16,20 @@ public class SuiviReservationService implements ISuiviReservationService {
     }
 
     public SuiviReservation findReservationById(String idReservation) {
-        return suivireservationRepository.findById(idReservation).orElseThrow();
+        return suivireservationRepository.findById(idReservation).orElse(null);
     }
 
     public SuiviReservation addSuiviReservation(SuiviReservation suiviReservation) {
-        return suivireservationRepository.save(suiviReservation);
+        suivireservationRepository.upsertSiPlusRecent(
+                suiviReservation.getIdReservation(),
+                suiviReservation.getIdUsager(),
+                suiviReservation.getIdMateriel(),
+                suiviReservation.getQuantite(),
+                suiviReservation.getStatut(),
+                suiviReservation.getVersionEtat(),
+                suiviReservation.getMotif()
+        );
+        return suiviReservation;
     }
 
     public String deleteAllSuiviReservations() {

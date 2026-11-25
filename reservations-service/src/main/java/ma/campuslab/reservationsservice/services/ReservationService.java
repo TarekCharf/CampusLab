@@ -1,9 +1,14 @@
 package ma.campuslab.reservationsservice.services;
 
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import ma.campuslab.reservationsservice.config.RabbitConfig;
 import ma.campuslab.reservationsservice.entities.Reservation;
 import ma.campuslab.reservationsservice.entities.ReservationStatut;
+import ma.campuslab.reservationsservice.exceptions.materiel.MaterielObligatoireException;
+import ma.campuslab.reservationsservice.exceptions.materiel.MaterielQuantiteException;
+import ma.campuslab.reservationsservice.exceptions.usager.UsagerNonAdmissibleException;
+import ma.campuslab.reservationsservice.exceptions.usager.UsagerObligatoireException;
 import ma.campuslab.reservationsservice.grpc.UsagerGrpcClient;
 import ma.campuslab.reservationsservice.messaging.MessageEnvelope;
 import ma.campuslab.reservationsservice.messaging.MessagePublisher;
@@ -38,6 +43,7 @@ public class ReservationService implements IReservationService {
     }
 
     @Transactional
+    @Synchronized
     public Reservation addReservation(Reservation reservation) {
 
         if (reservation.getIdReservation() == null || reservation.getIdReservation().isBlank()) {
@@ -45,20 +51,20 @@ public class ReservationService implements IReservationService {
         }
 
         if (reservation.getIdUsager() == null || reservation.getIdUsager().isBlank()) {
-            throw new IllegalArgumentException("L'identifiant de l'usager est obligatoire");
+            throw new UsagerObligatoireException("L'identifiant de l'usager est obligatoire");
         }
 
         UsagerGrpcClient.Admissibilite admissibilite = usagerGrpcClient.verifier(reservation.getIdUsager());
         if (!admissibilite.admissible()) {
-            throw new IllegalArgumentException("L'identifiant de l'usager est " + admissibilite.motif());
+            throw new UsagerNonAdmissibleException(admissibilite.motif(), "L'identifiant de l'usager est " + admissibilite.motif());
         }
 
         if (reservation.getQuantite() <= 0) {
-            throw new IllegalArgumentException("La quantité est obligatoire et doit être positive");
+            throw new MaterielQuantiteException("La quantité est obligatoire et doit être positive");
         }
 
         if (reservation.getIdMateriel() == null || reservation.getIdMateriel().isBlank()) {
-            throw new IllegalArgumentException("L'identifiant du matériel est obligatoire");
+            throw new MaterielObligatoireException("L'identifiant du matériel est obligatoire");
         }
 
         reservation.setStatut(ReservationStatut.EN_ATTENTE);
@@ -106,7 +112,7 @@ public class ReservationService implements IReservationService {
             publierEtat(saved);
             return saved;
         }
-        throw new IllegalArgumentException("Impossible d'annuler la réservation");
+        return reservation; // déjà annulée ou en cours d'annulation, on ne fait rien
     }
 
     @Transactional
@@ -158,7 +164,8 @@ public class ReservationService implements IReservationService {
                                 "idMateriel", r.getIdMateriel(),
                                 "quantite", r.getQuantite(),
                                 "statut", r.getStatut().name(),
-                                "versionEtat", r.getVersionEtat())));
+                                "versionEtat", r.getVersionEtat(),
+                                "motif", r.getMotif() == null ? "" : r.getMotif())));
     }
 
     private String genererProchainIdReservation() {
