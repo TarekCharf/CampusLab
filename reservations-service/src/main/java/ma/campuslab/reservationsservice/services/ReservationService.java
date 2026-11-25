@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import ma.campuslab.reservationsservice.config.RabbitConfig;
 import ma.campuslab.reservationsservice.entities.Reservation;
 import ma.campuslab.reservationsservice.entities.ReservationStatut;
+import ma.campuslab.reservationsservice.exceptions.UsagerNonAdmissibleException;
+import ma.campuslab.reservationsservice.exceptions.UsagerObligatoireException;
 import ma.campuslab.reservationsservice.grpc.UsagerGrpcClient;
 import ma.campuslab.reservationsservice.messaging.MessageEnvelope;
 import ma.campuslab.reservationsservice.messaging.MessagePublisher;
@@ -45,12 +47,13 @@ public class ReservationService implements IReservationService {
         }
 
         if (reservation.getIdUsager() == null || reservation.getIdUsager().isBlank()) {
-            throw new IllegalArgumentException("L'identifiant de l'usager est obligatoire");
+            throw new UsagerObligatoireException("L'identifiant de l'usager est obligatoire", new NullPointerException());
         }
+
 
         UsagerGrpcClient.Admissibilite admissibilite = usagerGrpcClient.verifier(reservation.getIdUsager());
         if (!admissibilite.admissible()) {
-            throw new IllegalArgumentException("L'identifiant de l'usager est " + admissibilite.motif());
+            throw new UsagerNonAdmissibleException(admissibilite.motif(), "L'identifiant de l'usager est " + admissibilite.motif());
         }
 
         if (reservation.getQuantite() <= 0) {
