@@ -1,5 +1,6 @@
 package ma.campuslab.reservationsservice.entities;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,6 +26,9 @@ public class SuiviReservation {
 
     private int versionEtat;
 
+    @Nullable
+    private String Motif;
+
     public SuiviReservation(Reservation reservation){
         this.idReservation = reservation.getIdReservation();
         this.idUsager = reservation.getIdUsager();
@@ -32,5 +36,6 @@ public class SuiviReservation {
         this.quantite = reservation.getQuantite();
         this.statut = reservation.getStatut();
         this.versionEtat = reservation.getVersionEtat();
+        this.Motif = reservation.getMotif();
     }
 }

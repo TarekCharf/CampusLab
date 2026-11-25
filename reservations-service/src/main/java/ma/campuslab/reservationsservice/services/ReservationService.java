@@ -160,7 +160,8 @@ public class ReservationService implements IReservationService {
                                 "idMateriel", r.getIdMateriel(),
                                 "quantite", r.getQuantite(),
                                 "statut", r.getStatut().name(),
-                                "versionEtat", r.getVersionEtat())));
+                                "versionEtat", r.getVersionEtat(),
+                                "motif", r.getMotif() == null ? "" : r.getMotif())));
     }
 
     private String genererProchainIdReservation() {

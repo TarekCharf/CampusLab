@@ -5,6 +5,7 @@ import ma.campuslab.inventaireservice.config.RabbitConfig;
 import ma.campuslab.inventaireservice.entities.Allocation;
 import ma.campuslab.inventaireservice.entities.Decision;
 import ma.campuslab.inventaireservice.entities.Materiel;
+import ma.campuslab.inventaireservice.entities.MotifRejet;
 import ma.campuslab.inventaireservice.messaging.MessageEnvelope;
 import ma.campuslab.inventaireservice.repositories.IAllocationRepository;
 import ma.campuslab.inventaireservice.repositories.IDecisionRepository;
@@ -37,6 +38,8 @@ public class MaterielService implements IMaterielService{
 
     public String resetAllMateriel() {
         materielRepository.deleteAll();
+        decisionRepository.deleteAll();
+        allocationRepository.deleteAll();
         materielRepository.saveAll(List.of(
                 new Materiel("M01", "Vidéoprojecteur", 3),
                 new Materiel("M02", "Microphone", 1),
@@ -70,7 +73,7 @@ public class MaterielService implements IMaterielService{
                     RabbitConfig.T_RESERVATION_REFUSEE, cmd.idReservation(),
                     Map.of(
                             "idMateriel", cmd.donnees().get("idMateriel"),
-                            "motif", "Materiel inconnu"
+                            "motif", MotifRejet.MATERIEL_INCONNU
                     )
             ));
         }
@@ -82,7 +85,7 @@ public class MaterielService implements IMaterielService{
                     Map.of(
                             "idMateriel", materiel.getIdMateriel(),
                             "quantite", quantite,
-                            "motif", "Stock insuffisant"
+                            "motif", MotifRejet.MATERIEL_INCONNU
                     )
             ));
         }
