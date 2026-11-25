@@ -25,7 +25,7 @@ public class SuiviReservationService implements ISuiviReservationService {
                 suiviReservation.getIdUsager(),
                 suiviReservation.getIdMateriel(),
                 suiviReservation.getQuantite(),
-                suiviReservation.getStatut().name(),
+                suiviReservation.getStatut(),
                 suiviReservation.getVersionEtat()
         );
         return suiviReservation;

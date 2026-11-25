@@ -1,5 +1,6 @@
 package ma.campuslab.reservationsservice.repositories;
 
+import ma.campuslab.reservationsservice.entities.ReservationStatut;
 import ma.campuslab.reservationsservice.entities.SuiviReservation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -22,6 +23,6 @@ public interface ISuiviReservationRepository extends JpaRepository<SuiviReservat
                            @Param("usager") String usager,
                            @Param("materiel") String materiel,
                            @Param("quantite") int quantite,
-                           @Param("statut") String statut,
+                           @Param("statut") ReservationStatut statut,
                            @Param("version") int version);
     }
