@@ -18,7 +18,7 @@ public interface ISuiviReservationRepository extends JpaRepository<SuiviReservat
           statut       = IF(nouveau.version_etat > version_etat, nouveau.statut, statut),
           version_etat = GREATEST(version_etat, nouveau.version_etat)
         """, nativeQuery = true)
-    int upsertSiPlusRecent(@Param("id") String id,
+    SuiviReservation upsertSiPlusRecent(@Param("id") String id,
                            @Param("usager") String usager,
                            @Param("materiel") String materiel,
                            @Param("quantite") int quantite,

@@ -110,7 +110,7 @@ public class ReservationService implements IReservationService {
             publierEtat(saved);
             return saved;
         }
-        throw new IllegalArgumentException("Impossible d'annuler la réservation");
+        return reservation; // déjà annulée ou en cours d'annulation, on ne fait rien
     }
 
     @Transactional

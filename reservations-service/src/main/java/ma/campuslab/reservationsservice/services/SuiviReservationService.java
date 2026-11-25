@@ -20,7 +20,14 @@ public class SuiviReservationService implements ISuiviReservationService {
     }
 
     public SuiviReservation addSuiviReservation(SuiviReservation suiviReservation) {
-        return suivireservationRepository.save(suiviReservation);
+        return suivireservationRepository.upsertSiPlusRecent(
+                suiviReservation.getIdReservation(),
+                suiviReservation.getIdUsager(),
+                suiviReservation.getIdMateriel(),
+                suiviReservation.getQuantite(),
+                suiviReservation.getStatut().name(),
+                suiviReservation.getVersionEtat()
+        );
     }
 
     public String deleteAllSuiviReservations() {
