@@ -16,7 +16,7 @@ public class SuiviReservationService implements ISuiviReservationService {
     }
 
     public SuiviReservation findReservationById(String idReservation) {
-        return suivireservationRepository.findById(idReservation).orElseThrow();
+        return suivireservationRepository.findById(idReservation).orElse(null);
     }
 
     public SuiviReservation addSuiviReservation(SuiviReservation suiviReservation) {

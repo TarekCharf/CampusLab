@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import ma.campuslab.reservationsservice.config.RabbitConfig;
 import ma.campuslab.reservationsservice.entities.Reservation;
 import ma.campuslab.reservationsservice.entities.ReservationStatut;
+import ma.campuslab.reservationsservice.entities.SuiviReservation;
 import ma.campuslab.reservationsservice.exceptions.UsagerNonAdmissibleException;
 import ma.campuslab.reservationsservice.exceptions.UsagerObligatoireException;
 import ma.campuslab.reservationsservice.grpc.UsagerGrpcClient;
@@ -24,11 +25,13 @@ public class ReservationService implements IReservationService {
     private final IReservationRepository reservationRepository;
     private final MessagePublisher messagePublisher;
     private final UsagerGrpcClient usagerGrpcClient;
+    private final SuiviReservationService suiviReservationService;
 
-    public ReservationService(IReservationRepository reservationRepository, MessagePublisher messagePublisher, UsagerGrpcClient usagerGrpcClient) {
+    public ReservationService(IReservationRepository reservationRepository, MessagePublisher messagePublisher, UsagerGrpcClient usagerGrpcClient, SuiviReservationService suiviReservationService) {
         this.reservationRepository = reservationRepository;
         this.messagePublisher = messagePublisher;
         this.usagerGrpcClient = usagerGrpcClient;
+        this.suiviReservationService = suiviReservationService;
     }
 
     public Reservation findReservationById(String idReservation) {
