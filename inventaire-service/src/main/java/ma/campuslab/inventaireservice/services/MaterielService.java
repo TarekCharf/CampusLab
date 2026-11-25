@@ -62,13 +62,29 @@ public class MaterielService implements IMaterielService{
             return Optional.of(versMessage(existante.get()));
         }
 
-        String idMateriel = String.valueOf(cmd.donnees().get("idMateriel"));
-        int quantite = ((Number) cmd.donnees().get("quantite")).intValue();
-        if (quantite <= 0) {
-            // Message invalide (l'API REST l'empêche) : on l'écarte pour ne pas le rejouer en boucle
-            log.warn("IGNORE type={} idMessage={} idReservation={} : quantité invalide ({})",
-                    cmd.type(), cmd.idMessage(), idReservation, quantite);
-            return Optional.empty();
+        // 2) Vérification du matériel et de la quantité demandée
+        String idMateriel = cmd.donnees().get("idMateriel").toString();
+        Materiel materiel = materielRepository.findById(idMateriel).orElse(null);
+        if (materiel == null) {
+            return Optional.of(MessageEnvelope.of(
+                    RabbitConfig.T_RESERVATION_REFUSEE, cmd.idReservation(),
+                    Map.of(
+                            "idMateriel", cmd.donnees().get("idMateriel"),
+                            "motif", "Materiel inconnu"
+                    )
+            ));
+        }
+
+        int quantite = ((Number)cmd.donnees().get("quantite")).intValue();
+        if (materiel.getDisponible() < quantite) {
+            return Optional.of(MessageEnvelope.of(
+                    RabbitConfig.T_RESERVATION_REFUSEE, cmd.idReservation(),
+                    Map.of(
+                            "idMateriel", materiel.getIdMateriel(),
+                            "quantite", quantite,
+                            "motif", "Stock insuffisant"
+                    )
+            ));
         }
 
         // 2) Décision métier
