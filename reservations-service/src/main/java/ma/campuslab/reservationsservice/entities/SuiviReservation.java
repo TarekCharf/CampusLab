@@ -22,6 +22,7 @@ public class SuiviReservation {
     private int quantite;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
     private ReservationStatut statut;
 
     private int versionEtat;
