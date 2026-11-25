@@ -1,5 +1,6 @@
 package ma.campuslab.reservationsservice.services;
 
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import ma.campuslab.reservationsservice.config.RabbitConfig;
 import ma.campuslab.reservationsservice.entities.Reservation;
@@ -40,6 +41,7 @@ public class ReservationService implements IReservationService {
     }
 
     @Transactional
+    @Synchronized
     public Reservation addReservation(Reservation reservation) {
 
         if (reservation.getIdReservation() == null || reservation.getIdReservation().isBlank()) {

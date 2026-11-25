@@ -1,5 +1,6 @@
 package ma.campuslab.reservationsservice.controllers;
 
+import lombok.Synchronized;
 import ma.campuslab.reservationsservice.entities.Reservation;
 import ma.campuslab.reservationsservice.services.IReservationService;
 import ma.campuslab.reservationsservice.services.ISuiviReservationService;
@@ -25,6 +26,7 @@ public class ReservationController {
     }
 
     @PostMapping("/add")
+    @Synchronized
     public ResponseEntity<Reservation> addReservation(@RequestBody Reservation reservation) {
         return ResponseEntity.status((HttpStatus.CREATED)).body(reservationService.addReservation(reservation));
     }
