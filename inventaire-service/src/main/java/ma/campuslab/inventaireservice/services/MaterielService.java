@@ -85,7 +85,7 @@ public class MaterielService implements IMaterielService{
                     Map.of(
                             "idMateriel", materiel.getIdMateriel(),
                             "quantite", quantite,
-                            "motif", MotifRejet.MATERIEL_INCONNU
+                            "motif", MotifRejet.STOCK_INSUFFISANT
                     )
             ));
         }
